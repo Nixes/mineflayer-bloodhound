@@ -8,10 +8,10 @@ var bot = mineflayer.createBot({
 
 bloodhoundPlugin(bot);
 
-bot.on('onCorrelateAttack', function (hurtee,attacker,weapon) {
+bot.on('onCorrelateAttack', function (victim,attacker,weapon) {
   if (weapon) {
-    console.log("Entity: "+ (hurtee.displayName || hurtee.username ) + " attacked by: " + (attacker.displayName|| attacker.username) + " with: " + weapon.displayName);
+    console.log("Entity: "+ (victim.displayName || victim.username ) + " attacked by: " + (attacker.displayName|| attacker.username) + " with: " + weapon.displayName);
   } else {
-    console.log("Entity: "+ (hurtee.displayName || hurtee.username ) + " attacked by: " + (attacker.displayName|| attacker.username) );
+    console.log("Entity: "+ (victim.displayName || victim.username ) + " attacked by: " + (attacker.displayName|| attacker.username) );
   }
 });
