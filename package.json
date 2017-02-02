@@ -1,0 +1,21 @@
+{
+  "name": "mineflayer-bloodhound",
+  "version": "0.0.1",
+  "description": "a mineflayer plugin that allows the bot to find who is responsible for damage to another entity",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nixes/mineflayer-bloodhound.git"
+  },
+  "keywords": [
+    "minecraft",
+    "mineflayer",
+    "bot",
+    "bloodhound"
+  ],
+  "author": "Nixes",
+  "readmeFilename": "README.md"
+}
