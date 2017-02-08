@@ -33,7 +33,7 @@ function init(mineflayer) {
       // returns true if the yaw of the attacker and the attack direction are under max_delta_yaw_per
       function TestAttackYaw(attacker,victim) {
         var delta_attack_yaw_per = Math.abs( CalculateAttackYaw(attacker,victim) - attacker.headYaw ) / (2*Math.PI) * 100;
-        console.log("Delta Attack Yaw Per: "+ delta_attack_yaw_per);
+        //console.log("Delta Attack Yaw Per: "+ delta_attack_yaw_per);
         if (delta_attack_yaw_per < max_delta_yaw_per) {
           return true;
         }
@@ -60,6 +60,37 @@ function init(mineflayer) {
         }
       }
 
+      function CorrelateAttack(hurt_index,attack_index) {
+        var hurt = last_hurts[hurt_index];
+        var attack = last_attacks[attack_index];
+
+        // see if it was timed close enough to be related
+        var delta_time = Math.abs(hurt.time - attack.time);
+        if (delta_time > max_delta_time) { return; }
+        //console.log("Matched Time: "+delta_time);
+
+        // see if it was close enough to be related
+        var melee_dist = hurt.entity.position.distanceTo(attack.entity.position);
+        if (melee_dist > max_melee_dist) { return; }
+        //console.log("Matched Distance: "+melee_dist);
+
+        var weapon = attack.entity.heldItem;
+
+        if (bot.bloodhound.yaw_correlation_enabled === true) {
+          if (TestAttackYaw(attack.entity,hurt.entity)) {
+            bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
+            // remove the matches, now no longer required
+            last_hurts.splice(hurt_index,1);
+            last_attacks.splice(attack_index,1);
+          }
+        } else {
+          bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
+          // remove the matches, now no longer required
+          last_hurts.splice(hurt_index,1);
+          last_attacks.splice(attack_index,1);
+        }
+      }
+
       function CorrelateAttacks() {
         // perform cleanup if we've got quite too many
         if (last_hurts.length > 10) { CleanUpHurts(); }
@@ -72,38 +103,9 @@ function init(mineflayer) {
         //console.log("last_hurts len: "+ last_hurts.length + " last_attacks len:" + last_attacks.length);
 
         // iterate over recent examples to find matches
-        for (var i = 0; i < last_hurts.length;i++) {
-          var hurt = last_hurts[i];
-          for (var j = 0; j < last_attacks.length; j++) {
-            var attack = last_attacks[j];
-
-            // see if it was timed close enough to be related
-            var delta_time = Math.abs(hurt.time - attack.time);
-            if (delta_time < max_delta_time) {
-              //console.log("Matched Time: "+delta_time);
-              // see if it was close enough to be related
-              var melee_dist = hurt.entity.position.distanceTo(attack.entity.position);
-              if (melee_dist < max_melee_dist) {
-                var weapon = attack.entity.heldItem;
-
-                if (bot.bloodhound.yaw_correlation_enabled === true) {
-                  if (TestAttackYaw(attack.entity,hurt.entity)) {
-                    bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
-                    // remove the matches, now no longer required
-                    last_hurts.splice(i,1);
-                    last_attacks.splice(j,1);
-                  }
-                } else {
-                  //console.log("Matched Distance: "+melee_dist);
-                  bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
-                  // remove the matches, now no longer required
-                  last_hurts.splice(i,1);
-                  last_attacks.splice(j,1);
-                }
-
-              }
-            }
-
+        for (var hurt_index = 0; hurt_index < last_hurts.length;hurt_index++) {
+          for (var attack_index = 0; attack_index < last_attacks.length; attack_index++) {
+            CorrelateAttack(hurt_index,attack_index);
           }
         }
       }
