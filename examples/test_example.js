@@ -8,7 +8,10 @@ var bot = mineflayer.createBot({
 
 bloodhoundPlugin(bot);
 
-bot.on('onCorrelateAttack', function (victim,attacker,weapon) {
+// turn on yaw correlation, for better distinguishing of attacks within short radius
+bot.bloodhound.yaw_correlation_enabled = true;
+
+bot.on('onCorrelateAttack', function (attacker,victim,weapon) {
   if (weapon) {
     console.log("Entity: "+ (victim.displayName || victim.username ) + " attacked by: " + (attacker.displayName|| attacker.username) + " with: " + weapon.displayName);
   } else {
