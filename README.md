@@ -1,5 +1,10 @@
 # mineflayer-bloodhound
 
+Install from NPM with:
+```
+npm install mineflayer-bloodhound
+```
+
 Is a [mineflayer](https://github.com/PrismarineJS/mineflayer) plugin that allows the bot to find who is responsible for damage to another entity.
 
 A simple example of its usage can be found in the /examples folder
