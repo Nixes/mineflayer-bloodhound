@@ -1,6 +1,6 @@
 {
   "name": "mineflayer-bloodhound",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a mineflayer plugin that allows the bot to find who is responsible for damage to another entity",
   "main": "index.js",
   "scripts": {
