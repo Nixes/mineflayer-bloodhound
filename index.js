@@ -68,6 +68,9 @@ function init(mineflayer) {
         }
       }
 
+      /**
+       * Cleans up hurts and attacks that were used in this run
+       */
       function CleanUsedEvents() {
         // running in reverse allows us to remove more than one element
         for (var i = last_hurts.length-1; i > 0 ; i--) {
@@ -148,7 +151,6 @@ function init(mineflayer) {
        * @param entity
        * @param time
        * @return {{time: *, used: boolean, entity: *}}
-       * @constructor
        */
       function MakeEvent(entity, time) {
         return {"entity":entity,"time":time, used: false};
