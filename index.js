@@ -9,7 +9,7 @@ const max_delta_time = 10; // the maxiumum allowed delta time for attack correla
 const max_delta_yaw_per = 10; // maxiumum allowed difference between direction the attack came from and the direction a possible attacker was facing
 
 const max_age_cleanup = 20; // the maxiumum age of an entry from the current time
-
+const max_events_size_cleanup = 10; // maxiumum number of events in each array before triggering cleanup
 
 function init(mineflayer) {
 
@@ -52,18 +52,35 @@ function init(mineflayer) {
        */
       function CleanUpHurts() {
         const min_time = new Date() - max_age_cleanup;
-        for (var i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
+        for (let i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
           if (last_hurts[i].time < min_time) {
             last_hurts.splice(i,1);
           }
         }
-
       }
 
       function CleanUpAttacks () {
         const min_time = new Date() - max_age_cleanup;
-        for (var i = last_attacks.length-1; i > 0 ; i--) {
+        for (let i = last_attacks.length-1; i > 0 ; i--) {
           if (last_attacks[i].time < min_time) {
+            last_attacks.splice(i,1);
+          }
+        }
+      }
+
+      /**
+       * Cleans up hurts and attacks that were used in this run
+       */
+      function CleanUsedEvents() {
+        // running in reverse allows us to remove more than one element
+        for (let i = last_hurts.length-1; i > 0 ; i--) {
+          if (last_hurts[i].used) {
+            last_hurts.splice(i,1);
+          }
+        }
+
+        for (let i = last_attacks.length-1; i > 0 ; i--) {
+          if (last_attacks[i].used) {
             last_attacks.splice(i,1);
           }
         }
@@ -94,21 +111,21 @@ function init(mineflayer) {
           if (TestAttackYaw(attack.entity,hurt.entity)) {
             bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
             // remove the matches, now no longer required
-            last_hurts.splice(hurt_index,1);
-            last_attacks.splice(attack_index,1);
+            last_hurts[hurt_index].used = true;
+            last_attacks[attack_index].used = true;
           }
         } else {
           bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
           // remove the matches, now no longer required
-          last_hurts.splice(hurt_index,1);
-          last_attacks.splice(attack_index,1);
+          last_hurts[hurt_index].used = true;
+          last_attacks[attack_index].used = true;
         }
       }
 
       function CorrelateAttacks() {
         // perform cleanup if we've got quite too many
-        if (last_hurts.length > 10) { CleanUpHurts(); }
-        if (last_attacks.length > 10) { CleanUpAttacks(); }
+        if (last_hurts.length > max_events_size_cleanup) { CleanUpHurts(); }
+        if (last_attacks.length > max_events_size_cleanup) { CleanUpAttacks(); }
 
         // make sure we have enough entries for cross correlation
         if (last_hurts.length === 0) {return;}
@@ -118,23 +135,38 @@ function init(mineflayer) {
 
         // iterate over recent examples to find matches
         for (let hurt_index = 0; hurt_index < last_hurts.length;hurt_index++) {
+          // skip hurts that have already been used
+          if (last_hurts[hurt_index].used) continue;
           for (let attack_index = 0; attack_index < last_attacks.length; attack_index++) {
+            // skip attacks that have already been used
+            if (last_attacks[attack_index].used) continue;
             CorrelateAttack(hurt_index,attack_index);
           }
         }
+        CleanUsedEvents();
+      }
+
+      /**
+       *
+       * @param entity
+       * @param time
+       * @return {{time: *, used: boolean, entity: *}}
+       */
+      function MakeEvent(entity, time) {
+        return {"entity":entity,"time":time, used: false};
       }
 
       bot.on("entityHurt",function (entity) {
         //console.log("hurt");
         const time = new Date();
-        last_hurts.push( {"entity":entity,"time":time} );
+        last_hurts.push( MakeEvent(entity,time) );
         CorrelateAttacks();
       });
 
       bot.on("entitySwingArm",function (entity) {
         //console.log("armswing")
         const time = new Date();
-        last_attacks.push( {"entity":entity,"time":time} );
+        last_attacks.push( MakeEvent(entity,time) );
         CorrelateAttacks();
       });
     }
