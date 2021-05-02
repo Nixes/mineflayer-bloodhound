@@ -53,17 +53,16 @@ function init(mineflayer) {
       function CleanUpHurts() {
         const min_time = new Date() - max_age_cleanup;
         for (var i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
-          if (last_hurts[i].time < min_time) {
+          if (last_hurts[i].time < min_time || last_hurts[i].used) {
             last_hurts.splice(i,1);
           }
         }
-
       }
 
       function CleanUpAttacks () {
         const min_time = new Date() - max_age_cleanup;
         for (var i = last_attacks.length-1; i > 0 ; i--) {
-          if (last_attacks[i].time < min_time) {
+          if (last_attacks[i].time < min_time || last_attacks[i].used) {
             last_attacks.splice(i,1);
           }
         }
@@ -94,14 +93,14 @@ function init(mineflayer) {
           if (TestAttackYaw(attack.entity,hurt.entity)) {
             bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
             // remove the matches, now no longer required
-            last_hurts.splice(hurt_index,1);
-            last_attacks.splice(attack_index,1);
+            last_hurts[hurt_index].used = true;
+            last_attacks[attack_index].used = true;
           }
         } else {
           bot.emit("onCorrelateAttack",attack.entity,hurt.entity,weapon);
           // remove the matches, now no longer required
-          last_hurts.splice(hurt_index,1);
-          last_attacks.splice(attack_index,1);
+          last_hurts[hurt_index].used = true;
+          last_attacks[attack_index].used = true;
         }
       }
 
@@ -118,23 +117,38 @@ function init(mineflayer) {
 
         // iterate over recent examples to find matches
         for (let hurt_index = 0; hurt_index < last_hurts.length;hurt_index++) {
+          // skip hurts that have already been used
+          if (last_hurts[hurt_index].used) continue;
           for (let attack_index = 0; attack_index < last_attacks.length; attack_index++) {
+            // skip attacks that have already been used
+            if (last_attacks[attack_index].used) continue;
             CorrelateAttack(hurt_index,attack_index);
           }
         }
       }
 
+      /**
+       *
+       * @param {Entity} entity
+       * @param time
+       * @return {{time: *, used: boolean, entity: *}}
+       * @constructor
+       */
+      function MakeEvent(entity, time) {
+        return {"entity":entity,"time":time, used: false};
+      }
+
       bot.on("entityHurt",function (entity) {
         //console.log("hurt");
         const time = new Date();
-        last_hurts.push( {"entity":entity,"time":time} );
+        last_hurts.push( MakeAttack(entity,time) );
         CorrelateAttacks();
       });
 
       bot.on("entitySwingArm",function (entity) {
         //console.log("armswing")
         const time = new Date();
-        last_attacks.push( {"entity":entity,"time":time} );
+        last_attacks.push( MakeAttack(entity,time) );
         CorrelateAttacks();
       });
     }
