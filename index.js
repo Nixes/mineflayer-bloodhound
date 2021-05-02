@@ -51,7 +51,6 @@ function init(mineflayer) {
        * this function cleans up entries from last_hurts and last_attacks that are way too old
        */
       function CleanUpHurts() {
-        console.log("Cleanuphurts");
         const min_time = new Date() - max_age_cleanup;
         for (let i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
           if (last_hurts[i].time < min_time) {
@@ -61,7 +60,6 @@ function init(mineflayer) {
       }
 
       function CleanUpAttacks () {
-        console.log("Cleanupattacks");
         const min_time = new Date() - max_age_cleanup;
         for (let i = last_attacks.length-1; i > 0 ; i--) {
           if (last_attacks[i].time < min_time) {
