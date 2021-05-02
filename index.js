@@ -9,7 +9,7 @@ const max_delta_time = 10; // the maxiumum allowed delta time for attack correla
 const max_delta_yaw_per = 10; // maxiumum allowed difference between direction the attack came from and the direction a possible attacker was facing
 
 const max_age_cleanup = 20; // the maxiumum age of an entry from the current time
-
+const max_events_size_cleanup = 10; // maxiumum number of events in each array before triggering cleanup
 
 function init(mineflayer) {
 
@@ -51,8 +51,9 @@ function init(mineflayer) {
        * this function cleans up entries from last_hurts and last_attacks that are way too old
        */
       function CleanUpHurts() {
+        console.log("Cleanuphurts");
         const min_time = new Date() - max_age_cleanup;
-        for (var i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
+        for (let i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
           if (last_hurts[i].time < min_time) {
             last_hurts.splice(i,1);
           }
@@ -60,8 +61,9 @@ function init(mineflayer) {
       }
 
       function CleanUpAttacks () {
+        console.log("Cleanupattacks");
         const min_time = new Date() - max_age_cleanup;
-        for (var i = last_attacks.length-1; i > 0 ; i--) {
+        for (let i = last_attacks.length-1; i > 0 ; i--) {
           if (last_attacks[i].time < min_time) {
             last_attacks.splice(i,1);
           }
@@ -73,13 +75,13 @@ function init(mineflayer) {
        */
       function CleanUsedEvents() {
         // running in reverse allows us to remove more than one element
-        for (var i = last_hurts.length-1; i > 0 ; i--) {
+        for (let i = last_hurts.length-1; i > 0 ; i--) {
           if (last_hurts[i].used) {
             last_hurts.splice(i,1);
           }
         }
 
-        for (var i = last_attacks.length-1; i > 0 ; i--) {
+        for (let i = last_attacks.length-1; i > 0 ; i--) {
           if (last_attacks[i].used) {
             last_attacks.splice(i,1);
           }
@@ -124,8 +126,8 @@ function init(mineflayer) {
 
       function CorrelateAttacks() {
         // perform cleanup if we've got quite too many
-        if (last_hurts.length > 10) { CleanUpHurts(); }
-        if (last_attacks.length > 10) { CleanUpAttacks(); }
+        if (last_hurts.length > max_events_size_cleanup) { CleanUpHurts(); }
+        if (last_attacks.length > max_events_size_cleanup) { CleanUpAttacks(); }
 
         // make sure we have enough entries for cross correlation
         if (last_hurts.length === 0) {return;}
