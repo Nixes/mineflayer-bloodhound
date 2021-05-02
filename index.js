@@ -53,7 +53,7 @@ function init(mineflayer) {
       function CleanUpHurts() {
         const min_time = new Date() - max_age_cleanup;
         for (var i = last_hurts.length-1; i > 0 ; i--) { // running in reverse allows us to remove more than one element
-          if (last_hurts[i].time < min_time || last_hurts[i].used) {
+          if (last_hurts[i].time < min_time) {
             last_hurts.splice(i,1);
           }
         }
@@ -62,7 +62,22 @@ function init(mineflayer) {
       function CleanUpAttacks () {
         const min_time = new Date() - max_age_cleanup;
         for (var i = last_attacks.length-1; i > 0 ; i--) {
-          if (last_attacks[i].time < min_time || last_attacks[i].used) {
+          if (last_attacks[i].time < min_time) {
+            last_attacks.splice(i,1);
+          }
+        }
+      }
+
+      function CleanUsedEvents() {
+        // running in reverse allows us to remove more than one element
+        for (var i = last_hurts.length-1; i > 0 ; i--) {
+          if (last_hurts[i].used) {
+            last_hurts.splice(i,1);
+          }
+        }
+
+        for (var i = last_attacks.length-1; i > 0 ; i--) {
+          if (last_attacks[i].used) {
             last_attacks.splice(i,1);
           }
         }
@@ -125,11 +140,12 @@ function init(mineflayer) {
             CorrelateAttack(hurt_index,attack_index);
           }
         }
+        CleanUsedEvents();
       }
 
       /**
        *
-       * @param {Entity} entity
+       * @param entity
        * @param time
        * @return {{time: *, used: boolean, entity: *}}
        * @constructor
@@ -141,14 +157,14 @@ function init(mineflayer) {
       bot.on("entityHurt",function (entity) {
         //console.log("hurt");
         const time = new Date();
-        last_hurts.push( MakeAttack(entity,time) );
+        last_hurts.push( MakeEvent(entity,time) );
         CorrelateAttacks();
       });
 
       bot.on("entitySwingArm",function (entity) {
         //console.log("armswing")
         const time = new Date();
-        last_attacks.push( MakeAttack(entity,time) );
+        last_attacks.push( MakeEvent(entity,time) );
         CorrelateAttacks();
       });
     }
