@@ -1,5 +1,3 @@
-module.exports = inject;
-
 const max_melee_dist = 6; // the maxiumum reach of a melee attack (in blocks) for correlation
 const max_delta_time = 10; // the maxiumum allowed delta time for attack correlation
 const max_delta_yaw_per = 10; // maxiumum allowed difference between direction the attack came from and the direction a possible attacker was facing
@@ -164,3 +162,6 @@ function inject(bot) {
   });
 }
 
+module.exports = {
+  bloodhound: inject
+};
