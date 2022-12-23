@@ -13,6 +13,8 @@ declare module 'mineflayer-bloodhound' {
 declare module 'mineflayer' {
 	interface BotEvents {
 		onCorrelateAttack: (attacker: Entity, victim: Entity, weapon: Item) => void;
+		startedAttacking: () => void;
+		stoppedAttacking: () => void;
 	}
 
 	interface Bot {
