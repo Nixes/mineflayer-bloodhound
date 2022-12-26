@@ -17,5 +17,11 @@
     "bloodhound"
   ],
   "author": "Nixes",
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "mineflayer-bloodhound": "file:./",
+    "prismarine-entity": "^2.2.0",
+    "prismarine-item": "^1.12.1",
+    "mineflayer": "^4.6.0"
+  }
 }
